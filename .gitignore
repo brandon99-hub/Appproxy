@@ -1,0 +1,49 @@
+# Ignore build outputs
+bin/
+obj/
+publish/
+
+# Ignore user-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Ignore Visual Studio files
+.vs/
+*.vsidx
+*.vspscc
+*.vspx
+*.sap
+
+# Ignore sensitive configuration (IMPORTANT!)
+appsettings.Production.json
+appsettings.*.json
+!appsettings.json
+!appsettings.Development.json
+
+# Ignore logs
+*.log
+logs/
+
+# Ignore OS files
+.DS_Store
+Thumbs.db
+
+# Ignore IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Ignore NuGet packages
+*.nupkg
+*.snupkg
+packages/
+
+# Ignore test results
+TestResults/
+*.trx
+*.coverage
+*.coveragexml

@@ -1,0 +1,117 @@
+using Microsoft.AspNetCore.Mvc;
+using BIProxy.Models;
+using BIProxy.Services;
+
+namespace BIProxy.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public class AdmissionsController : ControllerBase
+{
+    private readonly BCProxyService _proxyService;
+    private readonly ILogger<AdmissionsController> _logger;
+
+    public AdmissionsController(
+        BCProxyService proxyService,
+        ILogger<AdmissionsController> logger)
+    {
+        _proxyService = proxyService;
+        _logger = logger;
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> PostAdmission([FromBody] AdmissionsPayload payload)
+    {
+        try
+        {
+            _logger.LogInformation("Received admission payload for {CandidateName}", payload.Candidate?.FullName);
+
+            // 1. Map to BCAdmission and post
+            var admission = new BCAdmission
+            {
+                How_you_knew_about_Kianda = payload.AdditionalInfo?.Source,
+                Have_you_ever_applied_before = payload.AdditionalInfo?.HasAppliedBefore ?? false,
+                If_yes_x002C__which_year = payload.AdditionalInfo?.PreviousApplicationYears?.FirstOrDefault() ?? 0,
+                Student_Full_Name = payload.Candidate?.FullName,
+                Date_of_Birth = payload.Candidate?.Dob,
+                Religion = payload.Candidate?.Religion,
+                Denomination = payload.Candidate?.Denomination,
+                Place_Among_Siblings = payload.Candidate?.BirthOrder,
+                Relevant_Condition = payload.Candidate?.MedicalInfo,
+                Estate_of_Residence = payload.ParentDetails?.Residency,
+                House_Telephone_No = payload.ParentDetails?.HouseTelephoneNo ?? "",
+                House_No = payload.ParentDetails?.HouseNo ?? 0,
+                Disclaimer = true
+            };
+
+            var admissionNo = await _proxyService.PostAdmissionAsync(admission);
+            _logger.LogInformation("Successfully created Admission: {AdmissionNo}", admissionNo);
+
+            // 2. Map and post AppSchools
+            if (payload.SchoolsAttended != null)
+            {
+                foreach (var school in payload.SchoolsAttended)
+                {
+                    int startYear = 0;
+                    if (!string.IsNullOrEmpty(school.YearsRange))
+                    {
+                        var parts = school.YearsRange.Split('-');
+                        if (parts.Length > 0 && int.TryParse(parts[0], out int year))
+                        {
+                            startYear = year;
+                        }
+                    }
+
+                    var appSchool = new BCAppSchool
+                    {
+                        Admission_No = admissionNo,
+                        School_Name = school.SchoolName,
+                        Years_Enrolled = startYear,
+                        Attending = "Day", // Defaulting to Day as requested or assumed
+                        Other_Reason = ""
+                    };
+                    await _proxyService.PostAppSchoolAsync(appSchool);
+                }
+            }
+
+            // 3. Map and post Siblings (to AppRelatives/AppRelations)
+            if (payload.Siblings != null)
+            {
+                foreach (var sibling in payload.Siblings)
+                {
+                    if (sibling.Relationship?.Equals("brother", StringComparison.OrdinalIgnoreCase) == true ||
+                        sibling.Relationship?.Equals("sister", StringComparison.OrdinalIgnoreCase) == true ||
+                        sibling.Relationship?.Equals("sibling", StringComparison.OrdinalIgnoreCase) == true)
+                    {
+                        var appRelative = new BCAppRelative
+                        {
+                            Admission_No = admissionNo,
+                            Name_of_Sibling = sibling.Name,
+                            Date_of_Birth = sibling.Dob,
+                            School_Attending_Attended = sibling.SchoolName
+                        };
+                        await _proxyService.PostAppRelativeAsync(appRelative);
+                    }
+                    else
+                    {
+                        var appRelation = new BCAppRelation
+                        {
+                            Admission_No = admissionNo,
+                            Name = sibling.Name,
+                            Relationship = sibling.Relationship,
+                            Class_of_Current_Student = "" 
+                        };
+                        await _proxyService.PostAppRelationAsync(appRelation);
+                    }
+                }
+            }
+
+            return Ok(new { success = true, admissionNo = admissionNo });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error processing admission payload");
+            return StatusCode(500, new { error = "Internal server error", details = ex.Message });
+        }
+    }
+}

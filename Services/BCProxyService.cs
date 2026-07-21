@@ -76,4 +76,15 @@ public class BCProxyService
             throw new Exception($"Failed to post AppRelation: {response.StatusCode} - {res}");
         }
     }
+    public async Task PostAdmissionParentAsync(BCAdmissionParent parent)
+    {
+        var json = JsonSerializer.Serialize(parent);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+        var response = await _httpClient.PostAsync("Admissionparents", content);
+        if (!response.IsSuccessStatusCode)
+        {
+            var res = await response.Content.ReadAsStringAsync();
+            throw new Exception($"Failed to post Admissionparent: {response.StatusCode} - {res}");
+        }
+    }
 }

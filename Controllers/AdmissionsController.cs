@@ -39,15 +39,45 @@ public class AdmissionsController : ControllerBase
                 Place_Among_Siblings = payload.Candidate?.BirthOrder,
                 Relevant_Condition = payload.Candidate?.MedicalInfo,
                 Estate_of_Residence = payload.ParentDetails?.Residency,
-                House_Telephone_No = payload.ParentDetails?.HouseTelephoneNo ?? "",
-                House_No = payload.ParentDetails?.HouseNo ?? 0,
                 Disclaimer = true
             };
 
             var admissionNo = await _proxyService.PostAdmissionAsync(admission);
             _logger.LogInformation("Successfully created Admission: {AdmissionNo}", admissionNo);
 
-            // 2. Map and post AppSchools
+            // 2. Map and post Parents
+            if (payload.ParentDetails != null)
+            {
+                if (!string.IsNullOrEmpty(payload.ParentDetails.FatherName))
+                {
+                    await _proxyService.PostAdmissionParentAsync(new BCAdmissionParent
+                    {
+                        Admission_No = admissionNo,
+                        Name = payload.ParentDetails.FatherName,
+                        Mobile_Number = payload.ParentDetails.FatherPhone,
+                        Profession = payload.ParentDetails.FatherProfession,
+                        Place_of_Work = payload.ParentDetails.FatherWork,
+                        Email = payload.ParentDetails.FatherEmail,
+                        Parent = "Father"
+                    });
+                }
+                
+                if (!string.IsNullOrEmpty(payload.ParentDetails.MotherName))
+                {
+                    await _proxyService.PostAdmissionParentAsync(new BCAdmissionParent
+                    {
+                        Admission_No = admissionNo,
+                        Name = payload.ParentDetails.MotherName,
+                        Mobile_Number = payload.ParentDetails.MotherPhone,
+                        Profession = payload.ParentDetails.MotherProfession,
+                        Place_of_Work = payload.ParentDetails.MotherWork,
+                        Email = payload.ParentDetails.MotherEmail,
+                        Parent = "Mother"
+                    });
+                }
+            }
+
+            // 3. Map and post AppSchools
             if (payload.SchoolsAttended != null)
             {
                 foreach (var school in payload.SchoolsAttended)
@@ -55,7 +85,7 @@ public class AdmissionsController : ControllerBase
                     int startYear = 0;
                     if (!string.IsNullOrEmpty(school.YearsRange))
                     {
-                        var parts = school.YearsRange.Split('-');
+                        var parts = school.YearsRange.Split(new[] { '-', ' ' }, StringSplitOptions.RemoveEmptyEntries);
                         if (parts.Length > 0 && int.TryParse(parts[0], out int year))
                         {
                             startYear = year;

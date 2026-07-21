@@ -38,12 +38,6 @@ public class BCAdmission
     [JsonPropertyName("Estate_of_Residence")]
     public string? Estate_of_Residence { get; set; }
 
-    [JsonPropertyName("House_Telephone_No")]
-    public string? House_Telephone_No { get; set; }
-
-    [JsonPropertyName("House_No")]
-    public int House_No { get; set; }
-
     [JsonPropertyName("Disclaimer")]
     public bool Disclaimer { get; set; }
 }
@@ -93,5 +87,28 @@ public class BCAppRelation
     public string? Relationship { get; set; }
 
     [JsonPropertyName("Class_of_Current_Student")]
-    public string? Class_of_Current_Student { get; set; }
+}
+
+public class BCAdmissionParent
+{
+    [JsonPropertyName("Admission_No")]
+    public string? Admission_No { get; set; }
+
+    [JsonPropertyName("Name")]
+    public string? Name { get; set; }
+
+    [JsonPropertyName("Mobile_Number")]
+    public string? Mobile_Number { get; set; }
+
+    [JsonPropertyName("Profession")]
+    public string? Profession { get; set; }
+
+    [JsonPropertyName("Place_of_Work")]
+    public string? Place_of_Work { get; set; }
+
+    [JsonPropertyName("Email")]
+    public string? Email { get; set; }
+
+    [JsonPropertyName("Parent")]
+    public string? Parent { get; set; }
 }

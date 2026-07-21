@@ -25,8 +25,16 @@ public class Candidate
 public class ParentDetails
 {
     public string? Residency { get; set; }
-    public string? HouseTelephoneNo { get; set; }
-    public int? HouseNo { get; set; }
+    public string? FatherName { get; set; }
+    public string? FatherPhone { get; set; }
+    public string? FatherProfession { get; set; }
+    public string? FatherWork { get; set; }
+    public string? FatherEmail { get; set; }
+    public string? MotherName { get; set; }
+    public string? MotherPhone { get; set; }
+    public string? MotherProfession { get; set; }
+    public string? MotherWork { get; set; }
+    public string? MotherEmail { get; set; }
 }
 
 public class AdditionalInfo

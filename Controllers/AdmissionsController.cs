@@ -22,28 +22,36 @@ public class AdmissionsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> PostAdmission([FromBody] AdmissionsPayload payload)
     {
+        string? currentAdmissionNo = payload.Admission_No;
         try
         {
             _logger.LogInformation("Received admission payload for {CandidateName}", payload.Candidate?.FullName);
 
-            // 1. Map to BCAdmission and post
-            var admission = new BCAdmission
+            if (string.IsNullOrEmpty(currentAdmissionNo))
             {
-                How_you_knew_about_Kianda = payload.AdditionalInfo?.Source,
-                Have_you_ever_applied_before = payload.AdditionalInfo?.HasAppliedBefore ?? false,
-                If_yes_x002C__which_year = payload.AdditionalInfo?.PreviousApplicationYears?.FirstOrDefault() ?? 0,
-                Student_Full_Name = payload.Candidate?.FullName,
-                Date_of_Birth = payload.Candidate?.Dob,
-                Religion = payload.Candidate?.Religion,
-                Denomination = payload.Candidate?.Denomination,
-                Place_Among_Siblings = payload.Candidate?.BirthOrder,
-                Relevant_Condition = payload.Candidate?.MedicalInfo,
-                Estate_of_Residence = payload.ParentDetails?.Residency,
-                Disclaimer = true
-            };
+                // 1. Map to BCAdmission and post
+                var admission = new BCAdmission
+                {
+                    How_you_knew_about_Kianda = payload.AdditionalInfo?.Source,
+                    Have_you_ever_applied_before = payload.AdditionalInfo?.HasAppliedBefore ?? false,
+                    If_yes_x002C__which_year = payload.AdditionalInfo?.PreviousApplicationYears?.FirstOrDefault() ?? 0,
+                    Student_Full_Name = payload.Candidate?.FullName,
+                    Date_of_Birth = payload.Candidate?.Dob,
+                    Religion = payload.Candidate?.Religion,
+                    Denomination = payload.Candidate?.Denomination,
+                    Place_Among_Siblings = payload.Candidate?.BirthOrder,
+                    Relevant_Condition = payload.Candidate?.MedicalInfo,
+                    Estate_of_Residence = payload.ParentDetails?.Residency,
+                    Disclaimer = true
+                };
 
-            var admissionNo = await _proxyService.PostAdmissionAsync(admission);
-            _logger.LogInformation("Successfully created Admission: {AdmissionNo}", admissionNo);
+                currentAdmissionNo = await _proxyService.PostAdmissionAsync(admission);
+                _logger.LogInformation("Successfully created Admission: {AdmissionNo}", currentAdmissionNo);
+            }
+            else
+            {
+                _logger.LogInformation("Resuming sync for existing Admission: {AdmissionNo}", currentAdmissionNo);
+            }
 
             // 2. Map and post Parents
             if (payload.ParentDetails != null)
@@ -52,7 +60,7 @@ public class AdmissionsController : ControllerBase
                 {
                     await _proxyService.PostAdmissionParentAsync(new BCAdmissionParent
                     {
-                        Admission_No = admissionNo,
+                        Admission_No = currentAdmissionNo,
                         Name = payload.ParentDetails.FatherName,
                         Mobile_Number = payload.ParentDetails.FatherPhone,
                         Profession = payload.ParentDetails.FatherProfession,
@@ -66,7 +74,7 @@ public class AdmissionsController : ControllerBase
                 {
                     await _proxyService.PostAdmissionParentAsync(new BCAdmissionParent
                     {
-                        Admission_No = admissionNo,
+                        Admission_No = currentAdmissionNo,
                         Name = payload.ParentDetails.MotherName,
                         Mobile_Number = payload.ParentDetails.MotherPhone,
                         Profession = payload.ParentDetails.MotherProfession,
@@ -94,7 +102,7 @@ public class AdmissionsController : ControllerBase
 
                     var appSchool = new BCAppSchool
                     {
-                        Admission_No = admissionNo,
+                        Admission_No = currentAdmissionNo,
                         School_Name = school.SchoolName,
                         Years_Enrolled = startYear,
                         Attending = "Day", // Defaulting to Day as requested or assumed
@@ -115,7 +123,7 @@ public class AdmissionsController : ControllerBase
                     {
                         var appRelative = new BCAppRelative
                         {
-                            Admission_No = admissionNo,
+                            Admission_No = currentAdmissionNo,
                             Name_of_Sibling = sibling.Name,
                             Date_of_Birth = sibling.Dob,
                             School_Attending_Attended = sibling.SchoolName
@@ -126,7 +134,7 @@ public class AdmissionsController : ControllerBase
                     {
                         var appRelation = new BCAppRelation
                         {
-                            Admission_No = admissionNo,
+                            Admission_No = currentAdmissionNo,
                             Name = sibling.Name,
                             Relationship = sibling.Relationship,
                             Class_of_Current_Student = "" 
@@ -136,12 +144,12 @@ public class AdmissionsController : ControllerBase
                 }
             }
 
-            return Ok(new { success = true, admissionNo = admissionNo });
+            return Ok(new { success = true, admissionNo = currentAdmissionNo });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error processing admission payload");
-            return StatusCode(500, new { error = "Internal server error", details = ex.Message });
+            return StatusCode(500, new { error = "Internal server error", details = ex.Message, admissionNo = currentAdmissionNo });
         }
     }
 }

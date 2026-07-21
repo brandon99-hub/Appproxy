@@ -5,6 +5,7 @@ namespace BIProxy.Models;
 
 public class AdmissionsPayload
 {
+    public string? Admission_No { get; set; }
     public Candidate? Candidate { get; set; }
     public ParentDetails? ParentDetails { get; set; }
     public AdditionalInfo? AdditionalInfo { get; set; }

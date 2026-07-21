@@ -19,9 +19,14 @@ public class BCProxyService
         _logger = logger;
     }
 
+    private readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
+    {
+        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+    };
+
     public async Task<string> PostAdmissionAsync(BCAdmission admission)
     {
-        var json = JsonSerializer.Serialize(admission);
+        var json = JsonSerializer.Serialize(admission, _jsonOptions);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
 
         _logger.LogInformation("Posting to Admissions");
@@ -43,7 +48,7 @@ public class BCProxyService
 
     public async Task PostAppSchoolAsync(BCAppSchool school)
     {
-        var json = JsonSerializer.Serialize(school);
+        var json = JsonSerializer.Serialize(school, _jsonOptions);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
         var response = await _httpClient.PostAsync("AppSchools", content);
         if (!response.IsSuccessStatusCode)
@@ -55,7 +60,7 @@ public class BCProxyService
 
     public async Task PostAppRelativeAsync(BCAppRelative relative)
     {
-        var json = JsonSerializer.Serialize(relative);
+        var json = JsonSerializer.Serialize(relative, _jsonOptions);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
         var response = await _httpClient.PostAsync("AppRelatives", content);
         if (!response.IsSuccessStatusCode)
@@ -67,7 +72,7 @@ public class BCProxyService
 
     public async Task PostAppRelationAsync(BCAppRelation relation)
     {
-        var json = JsonSerializer.Serialize(relation);
+        var json = JsonSerializer.Serialize(relation, _jsonOptions);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
         var response = await _httpClient.PostAsync("AppRelations", content);
         if (!response.IsSuccessStatusCode)
@@ -78,13 +83,13 @@ public class BCProxyService
     }
     public async Task PostAdmissionParentAsync(BCAdmissionParent parent)
     {
-        var json = JsonSerializer.Serialize(parent);
+        var json = JsonSerializer.Serialize(parent, _jsonOptions);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
         var response = await _httpClient.PostAsync("Admissionparents", content);
         if (!response.IsSuccessStatusCode)
         {
             var res = await response.Content.ReadAsStringAsync();
-            throw new Exception($"Failed to post Admissionparent: {response.StatusCode} - {res}");
+            throw new Exception($"Failed to post AdmissionParent: {response.StatusCode} - {res}");
         }
     }
 }

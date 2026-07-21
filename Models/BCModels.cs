@@ -87,6 +87,7 @@ public class BCAppRelation
     public string? Relationship { get; set; }
 
     [JsonPropertyName("Class_of_Current_Student")]
+    public string? Class_of_Current_Student { get; set; }
 }
 
 public class BCAdmissionParent

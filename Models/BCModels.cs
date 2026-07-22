@@ -15,7 +15,7 @@ public class BCAdmission
     public bool Have_you_ever_applied_before { get; set; }
 
     [JsonPropertyName("If_yes_x002C__which_year")]
-    public int If_yes_x002C__which_year { get; set; }
+    public string? If_yes_x002C__which_year { get; set; }
 
     [JsonPropertyName("Student_Full_Name")]
     public string? Student_Full_Name { get; set; }
@@ -51,7 +51,7 @@ public class BCAppSchool
     public string? School_Name { get; set; }
 
     [JsonPropertyName("Years_Enrolled")]
-    public int Years_Enrolled { get; set; }
+    public string? Years_Enrolled { get; set; }
 
     [JsonPropertyName("Attending")]
     public string? Attending { get; set; }

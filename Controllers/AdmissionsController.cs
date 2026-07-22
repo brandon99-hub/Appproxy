@@ -34,7 +34,7 @@ public class AdmissionsController : ControllerBase
                 {
                     How_you_knew_about_Kianda = payload.AdditionalInfo?.Source,
                     Have_you_ever_applied_before = payload.AdditionalInfo?.HasAppliedBefore ?? false,
-                    If_yes_x002C__which_year = payload.AdditionalInfo?.PreviousApplicationYears?.FirstOrDefault() ?? 0,
+                    If_yes_x002C__which_year = payload.AdditionalInfo?.PreviousApplicationYears != null && payload.AdditionalInfo.PreviousApplicationYears.Any() ? string.Join(",", payload.AdditionalInfo.PreviousApplicationYears) : "",
                     Student_Full_Name = payload.Candidate?.FullName,
                     Date_of_Birth = payload.Candidate?.Dob,
                     Religion = payload.Candidate?.Religion,
@@ -90,13 +90,13 @@ public class AdmissionsController : ControllerBase
             {
                 foreach (var school in payload.SchoolsAttended)
                 {
-                    int startYear = 0;
+                    string yearsEnrolled = "";
                     if (!string.IsNullOrEmpty(school.YearsRange))
                     {
-                        var parts = school.YearsRange.Split(new[] { '-', ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                        if (parts.Length > 0 && int.TryParse(parts[0], out int year))
+                        var matches = System.Text.RegularExpressions.Regex.Matches(school.YearsRange, @"\d+");
+                        if (matches.Count > 0)
                         {
-                            startYear = year;
+                            yearsEnrolled = string.Join(",", matches.Select(m => m.Value));
                         }
                     }
 
@@ -104,7 +104,7 @@ public class AdmissionsController : ControllerBase
                     {
                         Admission_No = currentAdmissionNo,
                         School_Name = school.SchoolName,
-                        Years_Enrolled = startYear,
+                        Years_Enrolled = yearsEnrolled,
                         Attending = "Day", // Defaulting to Day as requested or assumed
                         Other_Reason = ""
                     };

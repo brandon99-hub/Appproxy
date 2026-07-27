@@ -6,6 +6,9 @@ namespace BIProxy.Models;
 public class AdmissionsPayload
 {
     public string? Admission_No { get; set; }
+    public string? ApplyingGrade { get; set; }
+    public string? TransactionCode { get; set; }
+    public int? AdmissionCycleYear { get; set; }
     public Candidate? Candidate { get; set; }
     public ParentDetails? ParentDetails { get; set; }
     public AdditionalInfo? AdditionalInfo { get; set; }
@@ -56,5 +59,7 @@ public class Sibling
     public string? Name { get; set; }
     public string? Relationship { get; set; }
     public string? SchoolName { get; set; }
-    public string? Dob { get; set; }
+    public int? Order { get; set; }
+    public string? SiblingType { get; set; }
 }
+

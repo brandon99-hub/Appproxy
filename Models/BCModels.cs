@@ -38,6 +38,9 @@ public class BCAdmission
     [JsonPropertyName("Estate_of_Residence")]
     public string? Estate_of_Residence { get; set; }
 
+    [JsonPropertyName("Programme")]
+    public string? Programme { get; set; }
+
     [JsonPropertyName("Applying_for_Grade")]
     public string? Applying_for_Grade { get; set; }
 

@@ -47,6 +47,7 @@ public class AdmissionsController : ControllerBase
                     Place_Among_Siblings = payload.Candidate?.BirthOrder,
                     Relevant_Condition = payload.Candidate?.MedicalInfo,
                     Estate_of_Residence = payload.ParentDetails?.Residency,
+                    Programme = payload.Programme,
                     Applying_for_Grade = payload.ApplyingGrade,
                     Transaction_Code = payload.TransactionCode,
                     Intake_Year = payload.AdmissionCycleYear?.ToString(),

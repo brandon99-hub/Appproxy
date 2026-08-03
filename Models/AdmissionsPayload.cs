@@ -6,6 +6,7 @@ namespace BIProxy.Models;
 public class AdmissionsPayload
 {
     public string? Admission_No { get; set; }
+    public string? Programme { get; set; }
     public string? ApplyingGrade { get; set; }
     public string? TransactionCode { get; set; }
     public int? AdmissionCycleYear { get; set; }
